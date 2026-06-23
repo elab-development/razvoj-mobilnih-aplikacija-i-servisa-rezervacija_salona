@@ -5,6 +5,9 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BookMeLogo } from '@/components/BookMeLogo';
+import { useUserBookings } from '@/components/bookings/useUserBookings';
+import { useFavoriteSalons } from '@/components/home/useFavoriteSalons';
+import { useOwnerBookings } from '@/components/reminders/useOwnerBookings';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,9 +39,48 @@ function getInitials(name: string | undefined) {
 }
 
 export default function ProfileScreen() {
-  const { profile, logout } = useAuth();
+  const { profile, user, logout } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const userStatsId = profile?.role === 'user' ? user?.uid : undefined;
+  const ownerStatsId = profile?.role === 'owner' ? user?.uid : undefined;
+  const {
+    bookings: userBookings,
+    isLoading: userBookingsLoading,
+  } = useUserBookings(userStatsId);
+  const {
+    favoriteSalonIds,
+    isLoading: favoriteSalonsLoading,
+  } = useFavoriteSalons(userStatsId);
+  const {
+    upcomingBookings,
+    completedBookings,
+    isLoading: ownerBookingsLoading,
+  } = useOwnerBookings(ownerStatsId);
+  const profileStats =
+    profile?.role === 'user'
+      ? [
+          {
+            label: 'Bookings',
+            value: userBookingsLoading ? '...' : String(userBookings.length),
+          },
+          {
+            label: 'Saved salons',
+            value: favoriteSalonsLoading ? '...' : String(favoriteSalonIds.length),
+          },
+        ]
+      : profile?.role === 'owner'
+        ? [
+            {
+              label: 'Upcoming bookings',
+              value: ownerBookingsLoading ? '...' : String(upcomingBookings.length),
+            },
+            {
+              label: 'Completed bookings',
+              value: ownerBookingsLoading ? '...' : String(completedBookings.length),
+            },
+          ]
+        : [];
 
   const handleLogout = async () => {
     setLoading(true);
@@ -57,9 +99,11 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
           <BookMeLogo compact />
-          <View style={styles.iconButton}>
-            <Ionicons name="settings-outline" size={20} color="#BE185D" />
-          </View>
+          {profile?.role === 'admin' ? null : (
+            <View style={styles.iconButton}>
+              <Ionicons name="settings-outline" size={20} color="#BE185D" />
+            </View>
+          )}
         </View>
 
         <View style={styles.profileHero}>
@@ -76,35 +120,49 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.quickStats}>
-          <View style={styles.statTile}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Bookings</Text>
+        {profileStats.length > 0 ? (
+          <View style={styles.quickStats}>
+            {profileStats.map((stat) => (
+              <View key={stat.label} style={styles.statTile}>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            ))}
           </View>
-          <View style={styles.statTile}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Saved salons</Text>
-          </View>
-        </View>
+        ) : null}
 
-        <View style={styles.panel}>
-          <ProfileRow
-            icon="heart-outline"
-            title="Beauty preferences"
-            detail="Favorite services and salons"
-            onPress={() => router.push('/favorites')}
-          />
-          <ProfileRow
-            icon="notifications-outline"
-            title="Reminders"
-            detail="Appointment alerts and updates"
-          />
-          <ProfileRow
-            icon="card-outline"
-            title="Payments"
-            detail="Coming with the booking flow"
-          />
-        </View>
+        {profile?.role === 'user' ? (
+          <View style={styles.panel}>
+            <ProfileRow
+              icon="heart-outline"
+              title="Beauty preferences"
+              detail="Favorite services and salons"
+              onPress={() => router.push('/favorites')}
+            />
+          </View>
+        ) : null}
+
+        {profile?.role === 'owner' ? (
+          <View style={styles.panel}>
+            <ProfileRow
+              icon="notifications-outline"
+              title="Reminders"
+              detail="Upcoming bookings by salon"
+              onPress={() => router.push('/reminders')}
+            />
+          </View>
+        ) : null}
+
+        {profile?.role === 'admin' ? (
+          <View style={styles.panel}>
+            <ProfileRow
+              icon="stats-chart-outline"
+              title="Statistics"
+              detail="Bookings, salons and gross revenue"
+              onPress={() => router.push('/statistics')}
+            />
+          </View>
+        ) : null}
 
         <PrimaryButton
           title="Sign out"

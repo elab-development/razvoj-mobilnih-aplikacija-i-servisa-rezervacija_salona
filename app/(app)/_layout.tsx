@@ -68,6 +68,18 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="reminders"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="statistics"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="salons/[salonId]"
         options={{
           href: null,
