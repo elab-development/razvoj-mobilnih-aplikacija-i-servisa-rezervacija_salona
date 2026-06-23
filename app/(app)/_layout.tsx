@@ -62,6 +62,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="salons/[salonId]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="owner"
         options={{
           title: 'Salon',

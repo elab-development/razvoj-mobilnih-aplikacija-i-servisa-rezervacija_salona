@@ -6,9 +6,10 @@ import type { AvailableSalon } from '@/components/home/useAvailableSalons';
 
 type SalonDiscoveryCardProps = {
   salon: AvailableSalon;
+  onBook: () => void;
 };
 
-export function SalonDiscoveryCard({ salon }: SalonDiscoveryCardProps) {
+export function SalonDiscoveryCard({ salon, onBook }: SalonDiscoveryCardProps) {
   const address = `${salon.location.street}, ${salon.location.city}`;
 
   return (
@@ -33,7 +34,7 @@ export function SalonDiscoveryCard({ salon }: SalonDiscoveryCardProps) {
           <Text style={styles.detailText}>{address}</Text>
         </View>
 
-        <Pressable style={styles.bookButton}>
+        <Pressable style={styles.bookButton} onPress={onBook}>
           <Ionicons name="calendar-outline" size={18} color="#FFFFFF" />
           <Text style={styles.bookText}>Book</Text>
         </Pressable>

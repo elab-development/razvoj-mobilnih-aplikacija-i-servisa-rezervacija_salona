@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { Redirect } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function HomeScreen() {
   const { profile } = useAuth();
+  const router = useRouter();
   const { salons, isLoading, error } = useAvailableSalons();
   const [search, setSearch] = useState('');
   const [nearbyMode, setNearbyMode] = useState(false);
@@ -163,7 +164,16 @@ export default function HomeScreen() {
 
       {!isLoading && !error
         ? visibleSalons.map((salon) => (
-            <SalonDiscoveryCard key={salon.id} salon={salon} />
+            <SalonDiscoveryCard
+              key={salon.id}
+              salon={salon}
+              onBook={() =>
+                router.push({
+                  pathname: '/salons/[salonId]',
+                  params: { salonId: salon.id },
+                })
+              }
+            />
           ))
         : null}
     </AppScreenLayout>
