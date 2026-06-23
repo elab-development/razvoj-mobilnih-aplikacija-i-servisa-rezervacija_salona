@@ -25,7 +25,9 @@ export const weekDays: { key: WeekDay; label: string; name: string }[] = [
 
 type SalonWorkingHoursEditorProps = {
   value: EditableWorkingHours;
-  errors?: Partial<Record<`${WeekDay}.opensAt` | `${WeekDay}.closesAt`, string>>;
+  errors?: Partial<
+    Record<`${WeekDay}.opensAt` | `${WeekDay}.closesAt`, string>
+  >;
   onChange: (value: EditableWorkingHours) => void;
 };
 
@@ -75,14 +77,14 @@ export function SalonWorkingHoursEditor({
 
               <View style={styles.timeRow}>
                 <TimePickerField
-                  label="Opens"
+                  label='Opens'
                   value={dayValue.opensAt}
                   disabled={!dayValue.isOpen}
                   error={errors?.[`${day.key}.opensAt`]}
                   onChange={(opensAt) => updateWorkingDay(day.key, { opensAt })}
                 />
                 <TimePickerField
-                  label="Closes"
+                  label='Closes'
                   value={dayValue.closesAt}
                   disabled={!dayValue.isOpen}
                   error={errors?.[`${day.key}.closesAt`]}

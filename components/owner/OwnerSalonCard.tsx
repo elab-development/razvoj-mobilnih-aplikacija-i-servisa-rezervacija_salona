@@ -48,11 +48,14 @@ export function OwnerSalonCard({
 
           <View style={styles.actionStack}>
             <Pressable style={styles.actionButton} onPress={onEdit}>
-              <Ionicons name="create-outline" size={18} color="#DB2777" />
+              <Ionicons name='create-outline' size={18} color='#DB2777' />
               <Text style={styles.actionText}>Edit</Text>
             </Pressable>
-            <Pressable style={styles.primaryActionButton} onPress={onManageServices}>
-              <Ionicons name="sparkles-outline" size={18} color="#FFFFFF" />
+            <Pressable
+              style={styles.primaryActionButton}
+              onPress={onManageServices}
+            >
+              <Ionicons name='sparkles-outline' size={18} color='#FFFFFF' />
               <Text style={styles.primaryActionText}>Services</Text>
             </Pressable>
           </View>
@@ -61,12 +64,12 @@ export function OwnerSalonCard({
         <Text style={styles.description}>{salon.description}</Text>
 
         <View style={styles.detailRow}>
-          <Ionicons name="location-outline" size={17} color="#DB2777" />
+          <Ionicons name='location-outline' size={17} color='#DB2777' />
           <Text style={styles.detailText}>{address}</Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Ionicons name="navigate-outline" size={17} color="#DB2777" />
+          <Ionicons name='navigate-outline' size={17} color='#DB2777' />
           <Text style={styles.detailText}>
             {salon.location.latitude.toFixed(4)},{' '}
             {salon.location.longitude.toFixed(4)}

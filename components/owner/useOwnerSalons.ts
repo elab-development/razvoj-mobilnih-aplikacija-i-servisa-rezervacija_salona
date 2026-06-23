@@ -4,6 +4,7 @@ import {
   getDocs,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
@@ -27,7 +28,10 @@ export type OwnerSalonUpdate = Pick<
   | 'active'
 >;
 
-export function useOwnerSalons(ownerId: string | undefined) {
+export function useOwnerSalons(
+  ownerId: string | undefined,
+  ownerEmail: string | undefined,
+) {
   const [salons, setSalons] = useState<OwnerSalon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,11 +94,45 @@ export function useOwnerSalons(ownerId: string | undefined) {
     [],
   );
 
+  const createSalon = useCallback(
+    async (salonId: string, data: OwnerSalonUpdate) => {
+      if (!ownerId || !ownerEmail) {
+        throw new Error('Missing owner profile.');
+      }
+
+      const normalizedOwnerEmail = ownerEmail.trim().toLowerCase();
+      const newSalon: OwnerSalon = {
+        id: salonId,
+        ...data,
+        ownerId,
+        ownerEmail: normalizedOwnerEmail,
+        approved: false,
+      };
+
+      await setDoc(doc(db, 'salons', salonId), {
+        ...data,
+        ownerId,
+        ownerEmail: normalizedOwnerEmail,
+        approved: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      setSalons((currentSalons) =>
+        [...currentSalons, newSalon].sort((first, second) =>
+          first.name.localeCompare(second.name),
+        ),
+      );
+    },
+    [ownerEmail, ownerId],
+  );
+
   return {
     salons,
     isLoading,
     error,
     refetch: fetchSalons,
+    createSalon,
     updateSalon,
   };
 }

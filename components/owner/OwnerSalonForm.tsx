@@ -37,6 +37,7 @@ type FormErrors = Partial<
 
 type OwnerSalonFormProps = {
   salon: OwnerSalon;
+  mode?: 'create' | 'edit';
   isSaving: boolean;
   databaseError?: string | null;
   onCancel: () => void;
@@ -45,6 +46,7 @@ type OwnerSalonFormProps = {
 
 export function OwnerSalonForm({
   salon,
+  mode = 'edit',
   isSaving,
   databaseError,
   onCancel,
@@ -74,7 +76,10 @@ export function OwnerSalonForm({
     setSubmitError(null);
   }, [salon]);
 
-  const formTitle = useMemo(() => `Edit ${salon.name}`, [salon.name]);
+  const formTitle = useMemo(
+    () => (mode === 'create' ? 'Create salon' : `Edit ${salon.name}`),
+    [mode, salon.name],
+  );
 
   const handleSave = async () => {
     const nextErrors = validateSalonForm({
@@ -115,7 +120,9 @@ export function OwnerSalonForm({
         <View style={styles.titleGroup}>
           <Text style={styles.formTitle}>{formTitle}</Text>
           <Text style={styles.approvalText}>
-            Approval: {salon.approved ? 'approved' : 'waiting for admin'}
+            {mode === 'create'
+              ? 'New salons wait for admin approval'
+              : `Approval: ${salon.approved ? 'approved' : 'waiting for admin'}`}
           </Text>
         </View>
         <Pressable onPress={onCancel} style={styles.cancelButton}>
@@ -139,13 +146,13 @@ export function OwnerSalonForm({
       </View>
 
       <OwnerFormField
-        label="Salon name"
+        label='Salon name'
         value={name}
         onChangeText={setName}
         error={errors.name}
       />
       <OwnerFormField
-        label="Description"
+        label='Description'
         value={description}
         onChangeText={setDescription}
         multiline
@@ -162,7 +169,10 @@ export function OwnerSalonForm({
             return (
               <Pressable
                 key={item}
-                style={[styles.categoryButton, selected && styles.categoryActive]}
+                style={[
+                  styles.categoryButton,
+                  selected && styles.categoryActive,
+                ]}
                 onPress={() => setCategory(item)}
               >
                 <Text
@@ -202,12 +212,18 @@ export function OwnerSalonForm({
         onChange={setWorkingHours}
       />
 
-      {submitError ? <Text style={styles.submitError}>{submitError}</Text> : null}
+      {submitError ? (
+        <Text style={styles.submitError}>{submitError}</Text>
+      ) : null}
       {databaseError ? (
         <Text style={styles.submitError}>{databaseError}</Text>
       ) : null}
 
-      <PrimaryButton title="Save changes" loading={isSaving} onPress={handleSave} />
+      <PrimaryButton
+        title={mode === 'create' ? 'Create salon' : 'Save changes'}
+        loading={isSaving}
+        onPress={handleSave}
+      />
     </View>
   );
 }

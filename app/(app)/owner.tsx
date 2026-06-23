@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Redirect } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { collection, doc } from 'firebase/firestore';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { OwnerSalonCard } from '@/components/owner/OwnerSalonCard';
@@ -8,15 +10,22 @@ import { OwnerSalonForm } from '@/components/owner/OwnerSalonForm';
 import { SalonServicesPanel } from '@/components/owner/services/SalonServicesPanel';
 import {
   useOwnerSalons,
+  type OwnerSalon,
   type OwnerSalonUpdate,
 } from '@/components/owner/useOwnerSalons';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
 import { getDefaultAppRoute } from '@/lib/roleRoutes';
+import type { WeekDay } from '@/types/salon';
 
 export default function OwnerScreen() {
   const { profile, user } = useAuth();
-  const { salons, isLoading, error, updateSalon } = useOwnerSalons(user?.uid);
+  const { salons, isLoading, error, createSalon, updateSalon } = useOwnerSalons(
+    user?.uid,
+    profile?.email,
+  );
+  const [creatingSalon, setCreatingSalon] = useState<OwnerSalon | null>(null);
   const [editingSalonId, setEditingSalonId] = useState<string | null>(null);
   const [servicesSalonId, setServicesSalonId] = useState<string | null>(null);
   const [savingSalonId, setSavingSalonId] = useState<string | null>(null);
@@ -29,7 +38,35 @@ export default function OwnerScreen() {
   const editingSalon = salons.find((salon) => salon.id === editingSalonId);
   const servicesSalon = salons.find((salon) => salon.id === servicesSalonId);
 
-  const handleSave = async (salonId: string, data: OwnerSalonUpdate) => {
+  const handleStartCreate = () => {
+    if (!user || !profile?.email) {
+      setSaveError('Owner profile is still loading. Please try again.');
+      return;
+    }
+
+    setSaveError(null);
+    setEditingSalonId(null);
+    setServicesSalonId(null);
+    setCreatingSalon(
+      createDraftSalon(doc(collection(db, 'salons')).id, user.uid, profile.email),
+    );
+  };
+
+  const handleCreate = async (salonId: string, data: OwnerSalonUpdate) => {
+    setSavingSalonId(salonId);
+    setSaveError(null);
+
+    try {
+      await createSalon(salonId, data);
+      setCreatingSalon(null);
+    } catch (saveError) {
+      setSaveError(getSaveErrorMessage(saveError));
+    } finally {
+      setSavingSalonId(null);
+    }
+  };
+
+  const handleUpdate = async (salonId: string, data: OwnerSalonUpdate) => {
     setSavingSalonId(salonId);
     setSaveError(null);
 
@@ -61,8 +98,25 @@ export default function OwnerScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Your salons</Text>
-        <Text style={styles.sectionCount}>{salons.length}</Text>
+        <View style={styles.sectionActions}>
+          <Text style={styles.sectionCount}>{salons.length}</Text>
+          <Pressable style={styles.addSalonButton} onPress={handleStartCreate}>
+            <Ionicons name="add" size={18} color="#FFFFFF" />
+            <Text style={styles.addSalonText}>Add salon</Text>
+          </Pressable>
+        </View>
       </View>
+
+      {creatingSalon ? (
+        <OwnerSalonForm
+          salon={creatingSalon}
+          mode="create"
+          isSaving={savingSalonId === creatingSalon.id}
+          databaseError={saveError}
+          onCancel={() => setCreatingSalon(null)}
+          onSave={handleCreate}
+        />
+      ) : null}
 
       {isLoading ? (
         <View style={styles.stateBox}>
@@ -78,12 +132,12 @@ export default function OwnerScreen() {
         </View>
       ) : null}
 
-      {!isLoading && !error && salons.length === 0 ? (
+      {!isLoading && !error && salons.length === 0 && !creatingSalon ? (
         <View style={styles.stateBox}>
           <Text style={styles.stateTitle}>No salons yet</Text>
           <Text style={styles.stateText}>
-            Salon creation will come next. Seeded owner accounts should already
-            have one salon assigned.
+            Add your first salon so you can set services and later accept
+            bookings.
           </Text>
         </View>
       ) : null}
@@ -95,11 +149,13 @@ export default function OwnerScreen() {
               salon={salon}
               onEdit={() => {
                 setSaveError(null);
+                setCreatingSalon(null);
                 setServicesSalonId(null);
                 setEditingSalonId(salon.id);
               }}
               onManageServices={() => {
                 setSaveError(null);
+                setCreatingSalon(null);
                 setEditingSalonId(null);
                 setServicesSalonId(salon.id);
               }}
@@ -113,7 +169,7 @@ export default function OwnerScreen() {
           isSaving={savingSalonId === editingSalon.id}
           databaseError={saveError}
           onCancel={() => setEditingSalonId(null)}
-          onSave={handleSave}
+          onSave={handleUpdate}
         />
       ) : null}
 
@@ -157,11 +213,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 4,
   },
+  sectionActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   sectionTitle: {
     fontFamily: themeFonts.display,
     fontSize: 24,
     fontWeight: '700',
     color: '#3B0A24',
+  },
+  addSalonButton: {
+    minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: '#DB2777',
+  },
+  addSalonText: {
+    fontFamily: themeFonts.bodyStrong,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   sectionCount: {
     fontFamily: themeFonts.bodyStrong,
@@ -220,4 +296,55 @@ function getSaveErrorMessage(error: unknown) {
     default:
       return 'Salon update failed. Please check your connection and try again.';
   }
+}
+
+function createDraftSalon(
+  id: string,
+  ownerId: string,
+  ownerEmail: string,
+): OwnerSalon {
+  return {
+    id,
+    name: '',
+    description: '',
+    category: 'beauty',
+    imageUrl: '',
+    ownerId,
+    ownerEmail,
+    location: {
+      street: '',
+      city: '',
+      latitude: 44.8125,
+      longitude: 20.4612,
+    },
+    workingHours: createDefaultWorkingHours(),
+    active: true,
+    approved: false,
+  };
+}
+
+function createDefaultWorkingHours(): OwnerSalon['workingHours'] {
+  const openWeekDays: WeekDay[] = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+  ];
+  const weekendDays: WeekDay[] = ['saturday', 'sunday'];
+
+  return {
+    ...Object.fromEntries(
+      openWeekDays.map((day) => [
+        day,
+        { isOpen: true, opensAt: '09:00', closesAt: '18:00' },
+      ]),
+    ),
+    ...Object.fromEntries(
+      weekendDays.map((day) => [
+        day,
+        { isOpen: false, opensAt: null, closesAt: null },
+      ]),
+    ),
+  } as OwnerSalon['workingHours'];
 }

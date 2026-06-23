@@ -27,7 +27,7 @@ export function OwnerFormField({
     <View style={[styles.fieldGroup, containerStyle]}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        placeholderTextColor="#B9819F"
+        placeholderTextColor='#B9819F'
         style={[styles.input, error ? styles.inputError : null, style]}
         {...props}
       />
