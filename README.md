@@ -16,6 +16,27 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+## Seed Firebase
+
+Create `.env` from `.env.example`, fill in the Firebase web app values, then run:
+
+```bash
+npm run seed:firestore
+```
+
+The seed creates:
+
+- one admin user in `users`
+- four owner users in `users`
+- four salon documents in `salons`
+- eight service documents in `services`
+
+Default seeded accounts:
+
+- admin: `admin@bookme.local` / `BookMeAdmin123!`
+- owners: `luna.owner@bookme.local`, `rose.owner@bookme.local`, `glow.owner@bookme.local`, `velvet.owner@bookme.local`
+- owner password: `BookMeOwner123!`
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
