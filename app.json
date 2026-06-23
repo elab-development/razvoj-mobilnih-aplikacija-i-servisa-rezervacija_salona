@@ -28,6 +28,18 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow BookMe to use your location so salon owners can place salons on the map."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow BookMe to open your gallery so you can choose salon photos."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",

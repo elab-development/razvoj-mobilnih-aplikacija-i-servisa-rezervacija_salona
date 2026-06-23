@@ -300,7 +300,8 @@ async function seed() {
       ownerEmail: owner.email.trim().toLowerCase(),
       location: salon.location,
       workingHours: salon.workingHours,
-      status: 'active',
+      active: true,
+      approved: true,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

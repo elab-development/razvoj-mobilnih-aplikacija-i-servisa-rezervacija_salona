@@ -37,6 +37,35 @@ Default seeded accounts:
 - owners: `luna.owner@bookme.local`, `rose.owner@bookme.local`, `glow.owner@bookme.local`, `velvet.owner@bookme.local`
 - owner password: `BookMeOwner123!`
 
+## Firebase Storage
+
+Salon images are uploaded to Firebase Storage under:
+
+```text
+salons/{salonId}/{timestamp}.{extension}
+```
+
+In Firebase Console:
+
+1. Open Build > Storage.
+2. Create/enable the default Storage bucket for the same Firebase project.
+3. Keep `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` in `.env` equal to the bucket from the Firebase web app config.
+4. Use Storage rules that allow authenticated owners to upload salon images. For development you can start with authenticated writes, then tighten ownership rules before production.
+
+Example development rule:
+
+```text
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /salons/{salonId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+```
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)

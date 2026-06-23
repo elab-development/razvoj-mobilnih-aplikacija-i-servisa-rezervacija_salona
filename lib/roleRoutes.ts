@@ -6,7 +6,9 @@ export function getDefaultAppRoute(role: UserRole | undefined) {
       return '/admin';
     case 'owner':
       return '/owner';
-    default:
+    case 'user':
       return '/home';
+    default:
+      return '/profile';
   }
 }

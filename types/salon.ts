@@ -31,7 +31,8 @@ export type Salon = {
     longitude: number;
   };
   workingHours: Record<WeekDay, SalonWorkingDay>;
-  status: 'active' | 'inactive';
+  active: boolean;
+  approved: boolean;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 };
