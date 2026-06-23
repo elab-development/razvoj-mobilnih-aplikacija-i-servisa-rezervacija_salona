@@ -1,6 +1,7 @@
 import {
   collection,
   getDocs,
+  onSnapshot,
   query,
   where,
 } from 'firebase/firestore';
@@ -55,8 +56,36 @@ export function useOwnerBookings(ownerId: string | undefined) {
   }, [ownerId]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!ownerId) {
+      setBookings([]);
+      setIsLoading(false);
+      return undefined;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const unsubscribe = onSnapshot(
+      query(collection(db, 'bookings'), where('ownerId', '==', ownerId)),
+      (snapshot) => {
+        setBookings(
+          sortOwnerBookings(
+            snapshot.docs.map((bookingDoc) => ({
+              id: bookingDoc.id,
+              ...(bookingDoc.data() as Booking),
+            })),
+          ),
+        );
+        setIsLoading(false);
+      },
+      () => {
+        setError('Unable to load owner bookings. Please try again.');
+        setIsLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [ownerId]);
 
   const confirmedBookings = useMemo(
     () => bookings.filter((booking) => booking.status === 'confirmed'),

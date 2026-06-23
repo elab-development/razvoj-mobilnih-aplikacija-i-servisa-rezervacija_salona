@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   updateDoc,
@@ -52,8 +53,36 @@ export function useUserBookings(userId: string | undefined) {
   }, [userId]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!userId) {
+      setBookings([]);
+      setIsLoading(false);
+      return undefined;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const unsubscribe = onSnapshot(
+      query(collection(db, 'bookings'), where('userId', '==', userId)),
+      (snapshot) => {
+        setBookings(
+          sortUserBookings(
+            snapshot.docs.map((bookingDoc) => ({
+              id: bookingDoc.id,
+              ...(bookingDoc.data() as Booking),
+            })),
+          ),
+        );
+        setIsLoading(false);
+      },
+      () => {
+        setError('Unable to load bookings. Please try again.');
+        setIsLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [userId]);
 
   const cancelBooking = useCallback(async (bookingId: string) => {
     await updateDoc(doc(db, 'bookings', bookingId), {

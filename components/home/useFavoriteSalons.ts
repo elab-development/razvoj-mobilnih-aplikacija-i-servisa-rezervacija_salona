@@ -3,6 +3,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   setDoc,
@@ -52,8 +53,34 @@ export function useFavoriteSalons(userId: string | undefined) {
   }, [userId]);
 
   useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
+    if (!userId) {
+      setFavoriteSalonIds([]);
+      setIsLoading(false);
+      return undefined;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const unsubscribe = onSnapshot(
+      query(collection(db, 'favorites'), where('userId', '==', userId)),
+      (snapshot) => {
+        setFavoriteSalonIds(
+          snapshot.docs.map((favoriteDoc) => {
+            const data = favoriteDoc.data() as FavoriteSalon;
+            return data.salonId;
+          }),
+        );
+        setIsLoading(false);
+      },
+      () => {
+        setError('Unable to load favorites.');
+        setIsLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [userId]);
 
   const toggleFavorite = useCallback(
     async (salonId: string) => {
