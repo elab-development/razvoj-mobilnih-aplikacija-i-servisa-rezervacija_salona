@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { OwnerSalonCard } from '@/components/owner/OwnerSalonCard';
 import { OwnerSalonForm } from '@/components/owner/OwnerSalonForm';
+import { SalonServicesPanel } from '@/components/owner/services/SalonServicesPanel';
 import {
   useOwnerSalons,
   type OwnerSalonUpdate,
@@ -17,6 +18,7 @@ export default function OwnerScreen() {
   const { profile, user } = useAuth();
   const { salons, isLoading, error, updateSalon } = useOwnerSalons(user?.uid);
   const [editingSalonId, setEditingSalonId] = useState<string | null>(null);
+  const [servicesSalonId, setServicesSalonId] = useState<string | null>(null);
   const [savingSalonId, setSavingSalonId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -25,6 +27,7 @@ export default function OwnerScreen() {
   }
 
   const editingSalon = salons.find((salon) => salon.id === editingSalonId);
+  const servicesSalon = salons.find((salon) => salon.id === servicesSalonId);
 
   const handleSave = async (salonId: string, data: OwnerSalonUpdate) => {
     setSavingSalonId(salonId);
@@ -92,7 +95,13 @@ export default function OwnerScreen() {
               salon={salon}
               onEdit={() => {
                 setSaveError(null);
+                setServicesSalonId(null);
                 setEditingSalonId(salon.id);
+              }}
+              onManageServices={() => {
+                setSaveError(null);
+                setEditingSalonId(null);
+                setServicesSalonId(salon.id);
               }}
             />
           ))
@@ -105,6 +114,13 @@ export default function OwnerScreen() {
           databaseError={saveError}
           onCancel={() => setEditingSalonId(null)}
           onSave={handleSave}
+        />
+      ) : null}
+
+      {servicesSalon ? (
+        <SalonServicesPanel
+          salon={servicesSalon}
+          onClose={() => setServicesSalonId(null)}
         />
       ) : null}
     </AppScreenLayout>

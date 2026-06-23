@@ -7,9 +7,14 @@ import type { OwnerSalon } from '@/components/owner/useOwnerSalons';
 type OwnerSalonCardProps = {
   salon: OwnerSalon;
   onEdit: () => void;
+  onManageServices: () => void;
 };
 
-export function OwnerSalonCard({ salon, onEdit }: OwnerSalonCardProps) {
+export function OwnerSalonCard({
+  salon,
+  onEdit,
+  onManageServices,
+}: OwnerSalonCardProps) {
   const address = `${salon.location.street}, ${salon.location.city}`;
 
   return (
@@ -41,10 +46,16 @@ export function OwnerSalonCard({ salon, onEdit }: OwnerSalonCardProps) {
             </View>
           </View>
 
-          <Pressable style={styles.editButton} onPress={onEdit}>
-            <Ionicons name="create-outline" size={18} color="#DB2777" />
-            <Text style={styles.editText}>Edit</Text>
-          </Pressable>
+          <View style={styles.actionStack}>
+            <Pressable style={styles.actionButton} onPress={onEdit}>
+              <Ionicons name="create-outline" size={18} color="#DB2777" />
+              <Text style={styles.actionText}>Edit</Text>
+            </Pressable>
+            <Pressable style={styles.primaryActionButton} onPress={onManageServices}>
+              <Ionicons name="sparkles-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.primaryActionText}>Services</Text>
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.description}>{salon.description}</Text>
@@ -141,7 +152,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF3C7',
     color: '#92400E',
   },
-  editButton: {
+  actionStack: {
+    gap: 8,
+  },
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
@@ -150,11 +164,26 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#FFF1F7',
   },
-  editText: {
+  primaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#DB2777',
+  },
+  actionText: {
     fontFamily: themeFonts.bodyStrong,
     fontSize: 13,
     fontWeight: '700',
     color: '#DB2777',
+  },
+  primaryActionText: {
+    fontFamily: themeFonts.bodyStrong,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   description: {
     fontFamily: themeFonts.body,
