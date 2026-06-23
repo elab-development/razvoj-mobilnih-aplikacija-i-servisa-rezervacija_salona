@@ -1,58 +1,126 @@
-# Welcome to your Expo app 👋
+# BookMe
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BookMe je React Native / Expo aplikacija za rezervisanje termina u salonima lepote, frizerskim salonima, nail salonima i spa centrima. Aplikacija podrzava tri role korisnika: obican korisnik, vlasnik salona i administrator.
 
-## Get started
+Korisnik moze da pretrazuje aktivne i odobrene salone, sortira ih po blizini, dodaje salone u favorite, otvori detalje salona, izabere uslugu, datum i termin, kreira booking i pregleda ili otkaze svoje rezervacije.
 
-1. Install dependencies
+Owner moze da pregleda svoje salone, kreira novi salon, menja podatke salona, bira lokaciju na mapi, dodaje sliku iz galerije, menja radno vreme, aktivira/deaktivira salon i upravlja servisima salona. Owner ima i Reminders stranicu sa buducim booking-ima grupisanim po salonu.
 
-   ```bash
-   npm install
-   ```
+Administrator ima pregled korisnika i salona, moze da odobri salone i ima Statistics stranicu sa pregledom booking-a, korisnika, salona i gross zarade.
 
-2. Start the app
+## Tehnologije
 
-   ```bash
-   npx expo start
-   ```
+- React Native
+- Expo SDK 54
+- Expo Router
+- TypeScript
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- AsyncStorage za cuvanje auth sesije
+- react-native-maps
+- expo-location
+- expo-image-picker
+- expo-haptics
+- expo-audio
 
-## Seed Firebase
+## Glavne funkcionalnosti
 
-Create `.env` from `.env.example`, fill in the Firebase web app values, then run:
+- Registracija korisnika uz izbor role: `user` ili `owner`
+- Login preko Firebase email/password autentifikacije
+- Cuvanje korisnicke sesije
+- Role-based navigacija za `admin`, `owner` i `user`
+- CRUD nad salonima i servisima
+- Kreiranje i otkazivanje booking-a
+- Dodavanje i uklanjanje salona iz favorites
+- Admin approve flow za salone
+- Realtime osvezavanje booking-a, favorites i statistika preko Firestore listener-a
+- Loading state, error state i korisnicke poruke za neuspesne akcije
+- Pink UI tema prilagodjena aplikaciji za beauty industriju
 
-```bash
-npm run seed:firestore
+## Ekrani
+
+Aplikacija ima vise od 10 funkcionalno razlicitih ekrana:
+
+- Login
+- Register
+- Home
+- Salon details / booking
+- Bookings
+- Favorites
+- Profile
+- Owner salon dashboard
+- Reminders
+- Admin
+- Statistics
+
+## Native funkcionalnosti
+
+Projekat koristi vise native funkcionalnosti mobilnog uredjaja:
+
+- Geolokacija korisnika za sortiranje salona po blizini
+- Geolokacija ownera za inicijalno postavljanje lokacije salona
+- Mapa za izbor lokacije salona
+- Galerija telefona za izbor slike salona
+- Haptic feedback prilikom uspesnog kreiranja booking-a
+- Kratak confirmation sound prilikom uspesnog kreiranja booking-a
+
+## Struktura projekta
+
+```text
+bookme/
+  app/                    Expo Router ekrani i layout-i
+  components/             UI komponente i page-specific komponente
+  constants/              Tema i zajednicke konstante
+  contexts/               Auth context
+  lib/                    Firebase konfiguracija i helper funkcije
+  scripts/                Seed skripte
+  types/                  TypeScript modeli
+  assets/                 Slike i sound asseti
 ```
 
-The seed creates:
+## Firebase konfiguracija
 
-- one admin user in `users`
-- four owner users in `users`
-- four salon documents in `salons`
-- eight service documents in `services`
+Potrebno je kreirati Firebase projekat i ukljuciti:
 
-Default seeded accounts:
+1. Authentication
+   - Enable Email/Password provider.
+2. Firestore Database
+   - Kreirati bazu u Firebase Console.
+3. Firebase Storage
+   - Kreirati default Storage bucket za slike salona.
 
-- admin: `admin@bookme.local` / `BookMeAdmin123!`
-- owners: `luna.owner@bookme.local`, `rose.owner@bookme.local`, `glow.owner@bookme.local`, `velvet.owner@bookme.local`
-- owner password: `BookMeOwner123!`
+Zatim napraviti `.env` fajl na osnovu `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Popuniti vrednosti iz Firebase web app konfiguracije:
+
+```text
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+SEED_ADMIN_EMAIL=
+SEED_ADMIN_PASSWORD=
+SEED_ADMIN_NAME=
+```
+
+`SEED_ADMIN_*` vrednosti nisu obavezne. Ako ostanu prazne, seed skripta koristi podrazumevanog administratora.
 
 ## Firebase Storage
 
-Salon images are uploaded to Firebase Storage under:
+Slike salona se upload-uju u Firebase Storage putanju:
 
 ```text
 salons/{salonId}/{timestamp}.{extension}
 ```
 
-In Firebase Console:
-
-1. Open Build > Storage.
-2. Create/enable the default Storage bucket for the same Firebase project.
-3. Keep `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` in `.env` equal to the bucket from the Firebase web app config.
-4. Use Storage rules that allow authenticated owners to upload salon images. For development you can start with authenticated writes, then tighten ownership rules before production.
-
-Example development rule:
+Primer development Storage pravila:
 
 ```text
 rules_version = '2';
@@ -66,35 +134,90 @@ service firebase.storage {
 }
 ```
 
-In the output, you'll find options to open the app in a
+Za produkciju pravila treba dodatno ograniciti tako da samo owner konkretnog salona moze da menja sliku.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Pokretanje aplikacije
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Instalacija dependency-ja:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Pokretanje Expo development servera:
 
-## Learn more
+```bash
+npm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Pokretanje na Androidu:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run android
+```
 
-## Join the community
+Pokretanje na iOS-u:
 
-Join our community of developers creating universal apps.
+```bash
+npm run ios
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Pokretanje web verzije:
+
+```bash
+npm run web
+```
+
+## Seed baze
+
+Nakon sto je `.env` popunjen Firebase podacima, seed se pokrece komandom:
+
+```bash
+npm run seed:firestore
+```
+
+Seed kreira:
+
+- jednog administratora
+- cetiri owner korisnika
+- cetiri salona
+- osam servisa
+
+Podrazumevani nalozi:
+
+```text
+Admin:
+admin@bookme.local / BookMeAdmin123!
+
+Owners:
+luna.owner@bookme.local / BookMeOwner123!
+rose.owner@bookme.local / BookMeOwner123!
+glow.owner@bookme.local / BookMeOwner123!
+velvet.owner@bookme.local / BookMeOwner123!
+```
+
+Obican korisnik se moze registrovati kroz aplikaciju na Register ekranu.
+
+## Provera projekta
+
+TypeScript provera:
+
+```bash
+npx tsc --noEmit
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+Web export provera:
+
+```bash
+npx expo export --platform web --max-workers 1
+```
+
+## Napomena za build
+
+Za seminarski rad je potrebno dodati `eas.json` i napraviti preview ili production build preko Expo EAS Build sistema. Ovaj README opisuje lokalno pokretanje i Firebase konfiguraciju; EAS build konfiguracija se dodaje odvojeno.
