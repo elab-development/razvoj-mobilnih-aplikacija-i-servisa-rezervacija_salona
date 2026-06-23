@@ -1,53 +1,56 @@
 import { Redirect } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
 
+import { AdminSalonsTab } from '@/components/admin/AdminSalonsTab';
+import { AdminTabs, type AdminTab } from '@/components/admin/AdminTabs';
+import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
+import { useAdminSalons } from '@/components/admin/useAdminSalons';
+import { useAdminUsers } from '@/components/admin/useAdminUsers';
 import { AppScreenLayout } from '@/components/AppScreenLayout';
-import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function AdminScreen() {
   const { profile } = useAuth();
+  const [activeTab, setActiveTab] = useState<AdminTab>('users');
+  const usersState = useAdminUsers();
+  const salonsState = useAdminSalons();
 
   if (profile?.role !== 'admin') {
     return <Redirect href={getDefaultAppRoute(profile?.role)} />;
   }
 
+  const pendingSalonCount = salonsState.salons.filter(
+    (salon) => !salon.approved,
+  ).length;
+
   return (
     <AppScreenLayout
       title="Admin"
-      subtitle="Platform-level tools for user, owner and salon oversight."
+      subtitle="Review users and approve salons before they appear to clients."
     >
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Admin area</Text>
-        <Text style={styles.cardText}>
-          Admin accounts are not created from registration. Set the role to
-          admin in the users collection when you want platform access.
-        </Text>
-      </View>
+      <AdminTabs
+        activeTab={activeTab}
+        userCount={usersState.users.length}
+        salonCount={salonsState.salons.length}
+        pendingSalonCount={pendingSalonCount}
+        onChange={setActiveTab}
+      />
+
+      {activeTab === 'users' ? (
+        <AdminUsersTab
+          users={usersState.users}
+          isLoading={usersState.isLoading}
+          error={usersState.error}
+        />
+      ) : (
+        <AdminSalonsTab
+          salons={salonsState.salons}
+          isLoading={salonsState.isLoading}
+          error={salonsState.error}
+          approveSalon={salonsState.approveSalon}
+        />
+      )}
     </AppScreenLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#FBCFE8',
-    borderRadius: 20,
-    padding: 20,
-    gap: 10,
-  },
-  cardTitle: {
-    fontFamily: themeFonts.display,
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#3B0A24',
-  },
-  cardText: {
-    fontFamily: themeFonts.body,
-    fontSize: 15,
-    color: '#8A4562',
-    lineHeight: 21,
-  },
-});
