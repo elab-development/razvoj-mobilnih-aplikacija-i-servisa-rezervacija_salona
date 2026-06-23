@@ -62,6 +62,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="favorites"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="salons/[salonId]"
         options={{
           href: null,

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BookMeLogo } from '@/components/BookMeLogo';
@@ -36,6 +37,7 @@ function getInitials(name: string | undefined) {
 
 export default function ProfileScreen() {
   const { profile, logout } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -90,6 +92,7 @@ export default function ProfileScreen() {
             icon="heart-outline"
             title="Beauty preferences"
             detail="Favorite services and salons"
+            onPress={() => router.push('/favorites')}
           />
           <ProfileRow
             icon="notifications-outline"
@@ -118,13 +121,17 @@ function ProfileRow({
   icon,
   title,
   detail,
+  onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   detail: string;
+  onPress?: () => void;
 }) {
+  const RowContainer = onPress ? Pressable : View;
+
   return (
-    <View style={styles.row}>
+    <RowContainer style={styles.row} onPress={onPress}>
       <View style={styles.rowIcon}>
         <Ionicons name={icon} size={20} color="#DB2777" />
       </View>
@@ -133,7 +140,7 @@ function ProfileRow({
         <Text style={styles.rowDetail}>{detail}</Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color="#D68AAD" />
-    </View>
+    </RowContainer>
   );
 }
 
