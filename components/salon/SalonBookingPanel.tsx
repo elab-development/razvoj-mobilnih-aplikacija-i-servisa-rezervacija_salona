@@ -11,6 +11,7 @@ import {
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { playBookingConfirmationFeedback } from '@/lib/bookingFeedback';
 import type { BookingPayload, Booking } from '@/types/booking';
 import type {
   BookableSalon,
@@ -110,6 +111,7 @@ export function SalonBookingPanel({
         currency: 'RSD',
         status: 'confirmed',
       });
+      await playBookingConfirmationFeedback();
       setSelectedSlot(null);
       setSuccessMessage('Booking created. We will show it in Bookings next.');
     } catch {

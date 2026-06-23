@@ -13,6 +13,7 @@ import {
 
 import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { SalonDiscoveryCard } from '@/components/home/SalonDiscoveryCard';
+import { useFavoriteSalons } from '@/components/home/useFavoriteSalons';
 import {
   useAvailableSalons,
   type AvailableSalon,
@@ -22,12 +23,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function HomeScreen() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const router = useRouter();
   const { salons, isLoading, error } = useAvailableSalons();
+  const {
+    favoriteSet,
+    error: favoritesError,
+    toggleFavorite,
+  } = useFavoriteSalons(user?.uid);
   const [search, setSearch] = useState('');
   const [nearbyMode, setNearbyMode] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [favoriteLoadingSalonId, setFavoriteLoadingSalonId] = useState<string | null>(null);
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -92,6 +100,19 @@ export default function HomeScreen() {
     }
   };
 
+  const handleToggleFavorite = async (salonId: string) => {
+    setFavoriteLoadingSalonId(salonId);
+    setFavoriteError(null);
+
+    try {
+      await toggleFavorite(salonId);
+    } catch {
+      setFavoriteError('Favorite could not be updated. Please try again.');
+    } finally {
+      setFavoriteLoadingSalonId(null);
+    }
+  };
+
   return (
     <AppScreenLayout
       title={`Hi, ${profile?.name ?? 'there'}`}
@@ -131,6 +152,8 @@ export default function HomeScreen() {
       </View>
 
       {locationError ? <Text style={styles.errorText}>{locationError}</Text> : null}
+      {favoritesError ? <Text style={styles.errorText}>{favoritesError}</Text> : null}
+      {favoriteError ? <Text style={styles.errorText}>{favoriteError}</Text> : null}
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
@@ -167,6 +190,9 @@ export default function HomeScreen() {
             <SalonDiscoveryCard
               key={salon.id}
               salon={salon}
+              isFavorite={favoriteSet.has(salon.id)}
+              favoriteLoading={favoriteLoadingSalonId === salon.id}
+              onToggleFavorite={() => handleToggleFavorite(salon.id)}
               onBook={() =>
                 router.push({
                   pathname: '/salons/[salonId]',

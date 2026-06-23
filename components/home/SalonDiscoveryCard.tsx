@@ -6,10 +6,19 @@ import type { AvailableSalon } from '@/components/home/useAvailableSalons';
 
 type SalonDiscoveryCardProps = {
   salon: AvailableSalon;
+  isFavorite: boolean;
+  favoriteLoading?: boolean;
   onBook: () => void;
+  onToggleFavorite: () => void;
 };
 
-export function SalonDiscoveryCard({ salon, onBook }: SalonDiscoveryCardProps) {
+export function SalonDiscoveryCard({
+  salon,
+  isFavorite,
+  favoriteLoading = false,
+  onBook,
+  onToggleFavorite,
+}: SalonDiscoveryCardProps) {
   const address = `${salon.location.street}, ${salon.location.city}`;
 
   return (
@@ -22,9 +31,26 @@ export function SalonDiscoveryCard({ salon, onBook }: SalonDiscoveryCardProps) {
             <Text style={styles.name}>{salon.name}</Text>
             <Text style={styles.category}>{salon.category}</Text>
           </View>
-          {salon.distanceKm !== undefined ? (
-            <Text style={styles.distance}>{salon.distanceKm.toFixed(1)} km</Text>
-          ) : null}
+          <View style={styles.headerActions}>
+            {salon.distanceKm !== undefined ? (
+              <Text style={styles.distance}>{salon.distanceKm.toFixed(1)} km</Text>
+            ) : null}
+            <Pressable
+              style={[
+                styles.favoriteButton,
+                isFavorite && styles.favoriteButtonActive,
+                favoriteLoading && styles.disabled,
+              ]}
+              onPress={onToggleFavorite}
+              disabled={favoriteLoading}
+            >
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={20}
+                color={isFavorite ? '#FFFFFF' : '#DB2777'}
+              />
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.description}>{salon.description}</Text>
@@ -99,6 +125,27 @@ const styles = StyleSheet.create({
     fontFamily: themeFonts.bodyStrong,
     fontSize: 12,
     fontWeight: '700',
+  },
+  headerActions: {
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  favoriteButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F9A8D4',
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  favoriteButtonActive: {
+    borderColor: '#DB2777',
+    backgroundColor: '#DB2777',
+  },
+  disabled: {
+    opacity: 0.65,
   },
   description: {
     fontFamily: themeFonts.body,

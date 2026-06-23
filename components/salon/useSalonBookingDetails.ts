@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   where,
@@ -81,38 +82,37 @@ export function useSalonBookingDetails(salonId: string | undefined) {
     }
   }, [salonId]);
 
-  const fetchBookings = useCallback(async () => {
-    if (!salonId) {
-      setBookings([]);
-      return;
-    }
-
-    setBookingsLoading(true);
-
-    try {
-      const snapshot = await getDocs(
-        query(collection(db, 'bookings'), where('salonId', '==', salonId)),
-      );
-
-      setBookings(
-        snapshot.docs
-          .map((bookingDoc) => bookingDoc.data() as Booking)
-          .filter((booking) => booking.status !== 'cancelled'),
-      );
-    } catch {
-      setBookings([]);
-    } finally {
-      setBookingsLoading(false);
-    }
-  }, [salonId]);
-
   useEffect(() => {
     fetchDetails();
   }, [fetchDetails]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!salonId) {
+      setBookings([]);
+      setBookingsLoading(false);
+      return undefined;
+    }
+
+    setBookingsLoading(true);
+
+    const unsubscribe = onSnapshot(
+      query(collection(db, 'bookings'), where('salonId', '==', salonId)),
+      (snapshot) => {
+        setBookings(
+          snapshot.docs
+            .map((bookingDoc) => bookingDoc.data() as Booking)
+            .filter((booking) => booking.status !== 'cancelled'),
+        );
+        setBookingsLoading(false);
+      },
+      () => {
+        setBookings([]);
+        setBookingsLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [salonId]);
 
   const createBooking = useCallback(
     async (data: BookingPayload) => {
@@ -121,10 +121,8 @@ export function useSalonBookingDetails(salonId: string | undefined) {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-
-      await fetchBookings();
     },
-    [fetchBookings],
+    [],
   );
 
   return {
