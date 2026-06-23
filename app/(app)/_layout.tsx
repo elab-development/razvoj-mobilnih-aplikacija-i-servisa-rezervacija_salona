@@ -12,7 +12,8 @@ function TabBarIcon({ name, color }: { name: TabIconName; color: string }) {
 
 export default function AppLayout() {
   const { profile } = useAuth();
-  const canManageSalon = profile?.role === 'owner' || profile?.role === 'admin';
+  const isUser = profile?.role === 'user';
+  const isOwner = profile?.role === 'owner';
   const isAdmin = profile?.role === 'admin';
 
   return (
@@ -44,6 +45,7 @@ export default function AppLayout() {
         name="home"
         options={{
           title: 'Home',
+          href: isUser ? undefined : null,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="sparkles-outline" color={color} />
           ),
@@ -53,6 +55,7 @@ export default function AppLayout() {
         name="bookings"
         options={{
           title: 'Bookings',
+          href: isUser ? undefined : null,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="calendar-outline" color={color} />
           ),
@@ -62,7 +65,7 @@ export default function AppLayout() {
         name="owner"
         options={{
           title: 'Salon',
-          href: canManageSalon ? undefined : null,
+          href: isOwner ? undefined : null,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="business-outline" color={color} />
           ),

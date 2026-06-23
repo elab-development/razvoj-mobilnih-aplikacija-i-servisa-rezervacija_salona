@@ -5,13 +5,13 @@ import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function OwnerScreen() {
   const { profile } = useAuth();
-  const canManageSalon = profile?.role === 'owner' || profile?.role === 'admin';
 
-  if (!canManageSalon) {
-    return <Redirect href="/home" />;
+  if (profile?.role !== 'owner') {
+    return <Redirect href={getDefaultAppRoute(profile?.role)} />;
   }
 
   return (

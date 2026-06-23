@@ -1,10 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Redirect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { themeFonts } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function BookingsScreen() {
+  const { profile } = useAuth();
+
+  if (profile?.role !== 'user') {
+    return <Redirect href={getDefaultAppRoute(profile?.role)} />;
+  }
+
   return (
     <AppScreenLayout
       title="Bookings"

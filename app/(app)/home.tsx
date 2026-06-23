@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Redirect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppScreenLayout } from '@/components/AppScreenLayout';
@@ -6,9 +7,14 @@ import { BookMeLogo } from '@/components/BookMeLogo';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function HomeScreen() {
   const { profile } = useAuth();
+
+  if (profile?.role !== 'user') {
+    return <Redirect href={getDefaultAppRoute(profile?.role)} />;
+  }
 
   return (
     <AppScreenLayout

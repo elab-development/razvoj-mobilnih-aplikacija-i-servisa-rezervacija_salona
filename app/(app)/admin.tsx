@@ -4,12 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppScreenLayout } from '@/components/AppScreenLayout';
 import { themeFonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultAppRoute } from '@/lib/roleRoutes';
 
 export default function AdminScreen() {
   const { profile } = useAuth();
 
   if (profile?.role !== 'admin') {
-    return <Redirect href="/home" />;
+    return <Redirect href={getDefaultAppRoute(profile?.role)} />;
   }
 
   return (
